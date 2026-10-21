@@ -2,13 +2,19 @@
 
 import asyncio
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import text
 
 from app.core.security import hash_password
 from app.db.database import async_session_factory, engine
 from app.db.models import Base, User, Project, Task, Notification, project_members, task_tags
+
+
+def in_days(days: int) -> datetime:
+    """Демо-даты считаются от сегодняшнего дня — иначе через месяц всё «просрочено»."""
+    today = datetime.now(timezone.utc).replace(hour=18, minute=0, second=0, microsecond=0)
+    return today + timedelta(days=days)
 
 
 async def seed():
@@ -55,11 +61,11 @@ async def seed():
 
         # ──── Projects ────
         projects_data = [
-            {"name": "Мобильное приложение", "desc": "Разработка кроссплатформенного приложения для управления задачами и проектами", "status": "active", "priority": "high", "color": "#6C5CE7", "deadline": "2026-04-15", "progress": 68},
-            {"name": "Редизайн сайта", "desc": "Полный редизайн корпоративного сайта с новой визуальной концепцией", "status": "active", "priority": "medium", "color": "#00B894", "deadline": "2026-03-28", "progress": 45},
-            {"name": "CRM система", "desc": "Внутренняя CRM для отдела продаж с интеграцией почты и телефонии", "status": "planning", "priority": "high", "color": "#0984E3", "deadline": "2026-06-01", "progress": 12},
-            {"name": "API v2.0", "desc": "Обновление публичного API: новые эндпоинты, GraphQL, документация", "status": "review", "priority": "medium", "color": "#FDCB6E", "deadline": "2026-03-20", "progress": 90},
-            {"name": "Аналитическая платформа", "desc": "Дашборд с визуализацией бизнес-метрик и генерацией отчётов", "status": "active", "priority": "low", "color": "#E17055", "deadline": "2026-05-10", "progress": 30},
+            {"name": "Мобильное приложение", "desc": "Разработка кроссплатформенного приложения для управления задачами и проектами", "status": "active", "priority": "high", "color": "#6C5CE7", "deadline_days": 45, "progress": 68},
+            {"name": "Редизайн сайта", "desc": "Полный редизайн корпоративного сайта с новой визуальной концепцией", "status": "active", "priority": "medium", "color": "#00B894", "deadline_days": 21, "progress": 45},
+            {"name": "CRM система", "desc": "Внутренняя CRM для отдела продаж с интеграцией почты и телефонии", "status": "planning", "priority": "high", "color": "#0984E3", "deadline_days": 90, "progress": 12},
+            {"name": "API v2.0", "desc": "Обновление публичного API: новые эндпоинты, GraphQL, документация", "status": "review", "priority": "medium", "color": "#FDCB6E", "deadline_days": 14, "progress": 90},
+            {"name": "Аналитическая платформа", "desc": "Дашборд с визуализацией бизнес-метрик и генерацией отчётов", "status": "active", "priority": "low", "color": "#E17055", "deadline_days": 60, "progress": 30},
         ]
 
         projects: dict[str, Project] = {}
@@ -71,7 +77,7 @@ async def seed():
                 status=p["status"],
                 priority=p["priority"],
                 color=p["color"],
-                deadline=datetime.strptime(p["deadline"], "%Y-%m-%d").replace(tzinfo=timezone.utc) if p["deadline"] else None,
+                deadline=in_days(p["deadline_days"]),
                 progress=p["progress"],
                 owner_id=users["АК"].id,
             )
@@ -100,18 +106,18 @@ async def seed():
 
         # ──── Tasks ────
         tasks_data = [
-            {"title": "Дизайн главного экрана", "project": "Мобильное приложение", "status": "done", "priority": "high", "assignee": "МД", "date": "2026-03-02", "tags": ["Дизайн"]},
-            {"title": "Настроить CI/CD пайплайн", "project": "API v2.0", "status": "done", "priority": "medium", "assignee": "ИС", "date": "2026-03-01", "tags": ["DevOps"]},
-            {"title": "Прототип навигации", "project": "Мобильное приложение", "status": "progress", "priority": "high", "assignee": "МД", "date": "2026-03-04", "tags": ["UX"]},
-            {"title": "Модуль авторизации", "project": "CRM система", "status": "progress", "priority": "high", "assignee": "АК", "date": "2026-03-05", "tags": ["Backend"]},
-            {"title": "Вёрстка лендинга", "project": "Редизайн сайта", "status": "progress", "priority": "medium", "assignee": "ЕВ", "date": "2026-03-04", "tags": ["Frontend"]},
-            {"title": "Написать тесты для API", "project": "API v2.0", "status": "todo", "priority": "medium", "assignee": "ИС", "date": "2026-03-06", "tags": ["Тесты"]},
-            {"title": "Интеграция аналитики", "project": "Аналитическая платформа", "status": "todo", "priority": "low", "assignee": "НК", "date": "2026-03-07", "tags": ["Backend"]},
-            {"title": "Документация API v2", "project": "API v2.0", "status": "progress", "priority": "low", "assignee": "ОЛ", "date": "2026-03-05", "tags": ["Документы"]},
-            {"title": "Схема БД для CRM", "project": "CRM система", "status": "todo", "priority": "high", "assignee": "АК", "date": "2026-03-08", "tags": ["Backend", "БД"]},
-            {"title": "Адаптивная вёрстка каталога", "project": "Редизайн сайта", "status": "todo", "priority": "medium", "assignee": "ЕВ", "date": "2026-03-09", "tags": ["Frontend"]},
-            {"title": "Push-уведомления", "project": "Мобильное приложение", "status": "todo", "priority": "medium", "assignee": "ДР", "date": "2026-03-10", "tags": ["Mobile"]},
-            {"title": "Оптимизация запросов", "project": "Аналитическая платформа", "status": "progress", "priority": "high", "assignee": "НК", "date": "2026-03-06", "tags": ["Backend"]},
+            {"title": "Дизайн главного экрана", "project": "Мобильное приложение", "status": "done", "priority": "high", "assignee": "МД", "days": -6, "tags": ["Дизайн"]},
+            {"title": "Настроить CI/CD пайплайн", "project": "API v2.0", "status": "done", "priority": "medium", "assignee": "ИС", "days": -4, "tags": ["DevOps"]},
+            {"title": "Прототип навигации", "project": "Мобильное приложение", "status": "in_progress", "priority": "high", "assignee": "МД", "days": 5, "tags": ["UX"]},
+            {"title": "Модуль авторизации", "project": "CRM система", "status": "in_progress", "priority": "high", "assignee": "АК", "days": 1, "tags": ["Backend"]},
+            {"title": "Вёрстка лендинга", "project": "Редизайн сайта", "status": "in_progress", "priority": "medium", "assignee": "ЕВ", "days": 3, "tags": ["Frontend"]},
+            {"title": "Написать тесты для API", "project": "API v2.0", "status": "todo", "priority": "medium", "assignee": "ИС", "days": 9, "tags": ["Тесты"]},
+            {"title": "Интеграция аналитики", "project": "Аналитическая платформа", "status": "todo", "priority": "low", "assignee": "НК", "days": 12, "tags": ["Backend"]},
+            {"title": "Документация API v2", "project": "API v2.0", "status": "pending_review", "priority": "low", "assignee": "ОЛ", "days": 2, "tags": ["Документы"]},
+            {"title": "Схема БД для CRM", "project": "CRM система", "status": "todo", "priority": "high", "assignee": "АК", "days": -2, "tags": ["Backend", "БД"]},
+            {"title": "Адаптивная вёрстка каталога", "project": "Редизайн сайта", "status": "todo", "priority": "medium", "assignee": "ЕВ", "days": 10, "tags": ["Frontend"]},
+            {"title": "Push-уведомления", "project": "Мобильное приложение", "status": "todo", "priority": "medium", "assignee": "ДР", "days": 14, "tags": ["Mobile"]},
+            {"title": "Оптимизация запросов", "project": "Аналитическая платформа", "status": "in_progress", "priority": "high", "assignee": "НК", "days": 6, "tags": ["Backend"]},
         ]
 
         for t in tasks_data:
@@ -120,7 +126,7 @@ async def seed():
                 title=t["title"],
                 status=t["status"],
                 priority=t["priority"],
-                due_date=datetime.strptime(t["date"], "%Y-%m-%d").replace(tzinfo=timezone.utc) if t["date"] else None,
+                due_date=in_days(t["days"]),
                 project_id=projects[t["project"]].id,
                 assignee_id=users[t["assignee"]].id,
                 created_by=users["АК"].id,
