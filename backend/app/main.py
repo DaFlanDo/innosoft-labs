@@ -15,11 +15,14 @@ from app.api import auth, projects, tasks, users, notifications, analytics, invi
 from app.cache.redis import close_redis
 from app.db.database import engine
 from app.db.models import Base
+from app.core.config import get_settings
 from app.db.seed import seed
 from app.socket.handlers import sio
 
 # Собранный React-фронт (npm run build). Раньше здесь был корень проекта —
 # и наружу отдавались все файлы, включая backend/.env.
+settings = get_settings()
+
 FRONTEND_DIR = Path(
     os.environ.get("FRONTEND_DIST")
     or Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
@@ -31,7 +34,8 @@ async def lifespan(app: FastAPI):
     # Startup: create tables + seed demo data
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    await seed()
+    if settings.SEED_DEMO:
+        await seed()
     yield
     # Shutdown
     await close_redis()

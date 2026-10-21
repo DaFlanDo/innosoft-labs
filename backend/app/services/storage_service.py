@@ -2,6 +2,7 @@
 
 from datetime import timedelta
 from io import BytesIO
+from urllib.parse import urlparse
 
 from minio import Minio
 
@@ -58,12 +59,35 @@ def upload_file(object_name: str, data: bytes, content_type: str = "application/
         length=len(data),
         content_type=content_type,
     )
-    return f"http://{settings.MINIO_ENDPOINT}/{settings.MINIO_BUCKET}/{object_name}"
+    return f"{_public_base()}/{settings.MINIO_BUCKET}/{object_name}"
+
+
+def _public_base() -> str:
+    return (settings.MINIO_PUBLIC_URL or f"http://{settings.MINIO_ENDPOINT}").rstrip("/")
+
+
+_public_client: Minio | None = None
+
+
+def _get_public_client() -> Minio:
+    """Клиент с публичным адресом — только для подписи ссылок (без сетевых запросов:
+    регион задан явно, поэтому presign считается локально)."""
+    global _public_client
+    if _public_client is None:
+        parsed = urlparse(_public_base())
+        _public_client = Minio(
+            parsed.netloc,
+            access_key=settings.MINIO_ACCESS_KEY,
+            secret_key=settings.MINIO_SECRET_KEY,
+            secure=parsed.scheme == "https",
+            region="us-east-1",
+        )
+    return _public_client
 
 
 def get_presigned_url(object_name: str, expires_seconds: int = 3600) -> str:
     """Generate a time-limited presigned GET URL for a stored object."""
-    client = get_minio_client()
+    client = _get_public_client()
     return client.presigned_get_object(
         settings.MINIO_BUCKET,
         object_name,
@@ -73,9 +97,11 @@ def get_presigned_url(object_name: str, expires_seconds: int = 3600) -> str:
 
 def object_name_from_url(url: str) -> str | None:
     """Extract the MinIO object name from a stored file URL."""
-    prefix = f"http://{settings.MINIO_ENDPOINT}/{settings.MINIO_BUCKET}/"
-    if url.startswith(prefix):
-        return url[len(prefix):]
+    # Старые записи могли сохраниться с внутренним адресом MinIO
+    for base in (_public_base(), f"http://{settings.MINIO_ENDPOINT}"):
+        prefix = f"{base}/{settings.MINIO_BUCKET}/"
+        if url.startswith(prefix):
+            return url[len(prefix):]
     return None
 
 

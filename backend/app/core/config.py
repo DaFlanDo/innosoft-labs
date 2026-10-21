@@ -22,10 +22,16 @@ class Settings(BaseSettings):
     MINIO_ACCESS_KEY: str = "minioadmin"
     MINIO_SECRET_KEY: str = "minioadmin"
     MINIO_BUCKET: str = "innosoft"
+    # Адрес MinIO для браузера (ссылки на файлы). Внутри Docker backend ходит
+    # в minio:9000, а браузеру нужен, например, http://localhost:9000
+    MINIO_PUBLIC_URL: str = ""
 
     # App
     APP_PORT: int = 8000
     DEBUG: bool = True
+    # Демо-пользователи и проекты при пустой базе. В проде — выключено:
+    # у демо-админа известный пароль
+    SEED_DEMO: bool = False
 
     model_config = {
         "env_file": ".env",
