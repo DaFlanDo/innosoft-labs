@@ -16,7 +16,7 @@ from app.core.permissions import (
     can_approve_task,
     is_admin,
 )
-from app.db.models import User, Task, Notification
+from app.db.models import User, Task, TaskAttachment, Notification
 from app.schemas.task import TaskCreate, TaskUpdate, TaskOut, CommentCreate, CommentOut, AttachmentOut, RejectBody
 from app.services import task_service, activity_service
 from app.services.storage_service import upload_file, get_presigned_url, object_name_from_url
@@ -32,6 +32,24 @@ router = APIRouter(tags=["Tasks"])
 
 DB = Annotated[AsyncSession, Depends(get_db)]
 Me = Annotated[User, Depends(get_current_user)]
+
+
+async def _get_task_checked(db: AsyncSession, task_id: UUID, user: User, min_role: str) -> Task:
+    """Задача, к которой у пользователя есть доступ не ниже min_role, иначе 404/403.
+
+    Задачи без проекта (личные) видят только автор, исполнитель и админ.
+    """
+    result = await db.execute(select(Task).where(Task.id == str(task_id)))
+    task = result.scalar_one_or_none()
+    if task is None:
+        raise HTTPException(404, "Задача не найдена")
+    if is_admin(user):
+        return task
+    if task.project_id:
+        await require_project_role(db, task.project_id, user, min_role=min_role)
+    elif str(user.id) not in (str(task.created_by), str(task.assignee_id)):
+        raise HTTPException(403, "Нет доступа к задаче")
+    return task
 
 
 @router.get("/api/tasks", response_model=list[TaskOut])
@@ -203,18 +221,16 @@ async def reject_task(task_id: UUID, body: RejectBody, db: DB, current_user: Me)
 
 @router.get("/api/tasks/{task_id}/comments", response_model=list[CommentOut])
 async def get_comments(task_id: UUID, db: DB, current_user: Me):
+    await _get_task_checked(db, task_id, current_user, min_role="viewer")
     return await task_service.list_comments(db, task_id)
 
 
 @router.post("/api/tasks/{task_id}/comments", response_model=CommentOut, status_code=201)
 async def create_comment(task_id: UUID, body: CommentCreate, db: DB, current_user: Me):
-    result = await db.execute(select(Task).where(Task.id == str(task_id)))
-    existing = result.scalar_one_or_none()
-    if existing and existing.project_id and not is_admin(current_user):
-        await require_project_role(db, existing.project_id, current_user, min_role="member")
-    
+    existing = await _get_task_checked(db, task_id, current_user, min_role="member")
+
     comment = await task_service.create_comment(db, task_id, body.content, current_user.id)
-    
+
     if existing:
         await activity_service.log_activity(db, current_user.id, "comment_added", f"Оставил комментарий к задаче «{existing.title}»", project_id=existing.project_id, task_id=existing.id)
     
@@ -233,11 +249,13 @@ async def create_comment(task_id: UUID, body: CommentCreate, db: DB, current_use
 
 @router.get("/api/tasks/{task_id}/attachments", response_model=list[AttachmentOut])
 async def get_attachments(task_id: UUID, db: DB, current_user: Me):
+    await _get_task_checked(db, task_id, current_user, min_role="viewer")
     return await task_service.list_attachments(db, task_id)
 
 
 @router.post("/api/tasks/{task_id}/attachments", response_model=AttachmentOut, status_code=201)
 async def upload_attachment(task_id: UUID, file: Annotated[UploadFile, File()], db: DB, current_user: Me):
+    await _get_task_checked(db, task_id, current_user, min_role="member")
     data = await file.read()
     object_name = f"attachments/{task_id}/{_uuid.uuid4()}_{file.filename}"
     file_url = upload_file(object_name, data, file.content_type or "application/octet-stream")
@@ -272,6 +290,13 @@ async def upload_attachment(task_id: UUID, file: Annotated[UploadFile, File()], 
 
 @router.delete("/api/tasks/{task_id}/attachments/{attachment_id}", status_code=204)
 async def delete_attachment(task_id: UUID, attachment_id: UUID, db: DB, current_user: Me):
+    task = await _get_task_checked(db, task_id, current_user, min_role="member")
+    # Чужое вложение удаляет только менеджер проекта (или админ)
+    att = (await db.execute(
+        select(TaskAttachment).where(TaskAttachment.id == str(attachment_id))
+    )).scalar_one_or_none()
+    if att and str(att.uploaded_by) != str(current_user.id) and task.project_id and not is_admin(current_user):
+        await require_project_role(db, task.project_id, current_user, min_role="manager")
     deleted = await task_service.delete_attachment(db, attachment_id, task_id)
     if not deleted:
         raise HTTPException(404, "Вложение не найдено")
