@@ -25,6 +25,13 @@ redis_module.get_redis = mock_get_redis
 engine = create_async_engine(TEST_DATABASE_URL, echo=False)
 TestingSessionLocal = async_sessionmaker(autocommit=False, autoflush=False, bind=engine, expire_on_commit=False)
 
+@pytest.fixture(scope="session", autouse=True)
+async def _dispose_engine():
+    # Без dispose поток aiosqlite остаётся жить и pytest не завершается
+    yield
+    await engine.dispose()
+
+
 @pytest.fixture(autouse=True)
 async def prepare_database():
     async with engine.begin() as conn:
