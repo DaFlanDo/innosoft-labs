@@ -20,8 +20,12 @@ async def get_summary(db: AsyncSession) -> dict:
     done_tasks = (await db.execute(
         select(func.count()).select_from(Task).where(Task.status == "done")
     )).scalar() or 0
+    # «В процессе» — в работе или возвращённые на доработку; отдельно — на проверке
     in_progress = (await db.execute(
-        select(func.count()).select_from(Task).where(Task.status == "progress")
+        select(func.count()).select_from(Task).where(Task.status.in_(("in_progress", "rejected")))
+    )).scalar() or 0
+    in_review = (await db.execute(
+        select(func.count()).select_from(Task).where(Task.status == "pending_review")
     )).scalar() or 0
     total_users = (await db.execute(select(func.count()).select_from(User))).scalar() or 0
 
@@ -30,6 +34,7 @@ async def get_summary(db: AsyncSession) -> dict:
         "total_tasks": total_tasks,
         "completed_tasks": done_tasks,
         "in_progress_tasks": in_progress,
+        "review_tasks": in_review,
         "team_members": total_users,
     }
     await cache_set(key, data, CACHE_TTL)

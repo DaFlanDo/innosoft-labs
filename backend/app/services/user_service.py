@@ -41,7 +41,7 @@ async def get_user_stats(db: AsyncSession, user_id: UUID) -> dict:
         select(func.count()).select_from(Task).where(Task.assignee_id == user_id, Task.status == "todo")
     )
     progress = await db.execute(
-        select(func.count()).select_from(Task).where(Task.assignee_id == user_id, Task.status == "progress")
+        select(func.count()).select_from(Task).where(Task.assignee_id == user_id, Task.status.in_(("in_progress", "rejected")))
     )
     done = await db.execute(
         select(func.count()).select_from(Task).where(Task.assignee_id == user_id, Task.status == "done")

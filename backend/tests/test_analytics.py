@@ -14,3 +14,16 @@ async def test_analytics(client, auth_headers):
     # Team performance
     r3 = await client.get("/api/analytics/team-performance", headers=auth_headers)
     assert r3.status_code == 200
+
+
+async def test_summary_counts_real_statuses(client, auth_headers, project_id):
+    """«В процессе» и «на проверке» считаются по настоящим статусам задач."""
+    for title, status in [("a", "todo"), ("b", "in_progress"), ("c", "in_progress"), ("d", "done")]:
+        await client.post("/api/tasks", headers=auth_headers,
+                          json={"title": title, "project_id": project_id, "status": status})
+    r = await client.get("/api/analytics/summary", headers=auth_headers)
+    data = r.json()
+    assert data["total_tasks"] == 4
+    assert data["in_progress_tasks"] == 2
+    assert data["completed_tasks"] == 1
+    assert data["review_tasks"] == 0

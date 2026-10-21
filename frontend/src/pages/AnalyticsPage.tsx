@@ -4,6 +4,9 @@ import { api } from '../api/client';
 import { calcProjectProgress, assigneeColor } from '../utils';
 import type { AnalyticsSummary, TasksByProject, TeamPerformance } from '../types';
 
+// Высота самого высокого столбца в графике «Задачи по проектам», px
+const CHART_BAR_MAX = 120;
+
 export function AnalyticsPage() {
   const { projects, tasks, team } = useStore();
   const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
@@ -27,7 +30,8 @@ export function AnalyticsPage() {
           total_projects: projects.length,
           total_tasks: tasks.length,
           completed_tasks: tasks.filter(t => t.status === 'done').length,
-          in_progress_tasks: tasks.filter(t => t.status === 'in_progress').length,
+          in_progress_tasks: tasks.filter(t => t.status === 'in_progress' || t.status === 'rejected').length,
+          review_tasks: tasks.filter(t => t.status === 'pending_review').length,
           team_members: team.length,
         });
         setTasksByProject(projects.map(p => ({
@@ -54,10 +58,12 @@ export function AnalyticsPage() {
   }
 
   const total = summary.total_tasks || 1;
-  const todo = total - summary.completed_tasks - summary.in_progress_tasks;
+  const review = summary.review_tasks ?? 0;
+  const todo = total - summary.completed_tasks - summary.in_progress_tasks - review;
   const pct1 = (todo / total * 100);
   const pct2 = pct1 + (summary.in_progress_tasks / total * 100);
-  const pieGradient = `conic-gradient(#6C5CE7 0% ${pct1}%, #FDCB6E ${pct1}% ${pct2}%, #00B894 ${pct2}% 100%)`;
+  const pct3 = pct2 + (review / total * 100);
+  const pieGradient = `conic-gradient(#6C5CE7 0% ${pct1}%, #FDCB6E ${pct1}% ${pct2}%, #0984E3 ${pct2}% ${pct3}%, #00B894 ${pct3}% 100%)`;
   const maxCount = Math.max(...tasksByProject.map(p => p.count || 0), 1);
 
   return (
@@ -85,9 +91,9 @@ export function AnalyticsPage() {
               <div key={p.name} className="chart-bar-group">
                 <div className="chart-bar-wrap">
                   <span className="chart-bar-count">{p.count}</span>
-                  <div className="chart-bar" style={{ height:`${Math.max(4, (p.count / maxCount) * 100)}%`, background: p.color || '#6C5CE7' }}/>
+                  <div className="chart-bar" style={{ height:`${Math.max(4, Math.round((p.count / maxCount) * CHART_BAR_MAX))}px`, background: p.color || '#6C5CE7' }}/>
                 </div>
-                <span className="chart-bar-label">{(p.name || '').split(' ')[0]}</span>
+                <span className="chart-bar-label" title={p.name}>{p.name}</span>
               </div>
             ))}
           </div>
@@ -98,6 +104,7 @@ export function AnalyticsPage() {
           <div className="pie-legend">
             <div className="pie-legend-item"><div className="pie-legend-dot" style={{ background:'#6C5CE7' }}/><span>К выполнению</span><span className="pie-legend-value">{todo}</span></div>
             <div className="pie-legend-item"><div className="pie-legend-dot" style={{ background:'#FDCB6E' }}/><span>В процессе</span><span className="pie-legend-value">{summary.in_progress_tasks}</span></div>
+            <div className="pie-legend-item"><div className="pie-legend-dot" style={{ background:'#0984E3' }}/><span>На проверке</span><span className="pie-legend-value">{review}</span></div>
             <div className="pie-legend-item"><div className="pie-legend-dot" style={{ background:'#00B894' }}/><span>Готово</span><span className="pie-legend-value">{summary.completed_tasks}</span></div>
           </div>
         </div>

@@ -115,6 +115,7 @@ export interface AnalyticsSummary {
   total_tasks: number;
   completed_tasks: number;
   in_progress_tasks: number;
+  review_tasks: number;
   team_members: number;
 }
 

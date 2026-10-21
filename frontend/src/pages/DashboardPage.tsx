@@ -49,7 +49,8 @@ export function DashboardPage({ search }: Props) {
   // Total completed tasks (can be all-time)
   const completedTasksCount = tasks.filter(t => t.status === 'done').length;
   // Tasks currently in progress ONLY for active projects
-  const inProgressTasksCount = tasks.filter(t => t.status !== 'done' && t.project_id && activeProjectIds.has(t.project_id)).length;
+  // Как в аналитике: в работе или возвращены на доработку
+  const inProgressTasksCount = tasks.filter(t => (t.status === 'in_progress' || t.status === 'rejected') && t.project_id && activeProjectIds.has(t.project_id)).length;
 
   // Filter by search
   const q = search.toLowerCase().trim();
