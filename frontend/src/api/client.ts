@@ -64,27 +64,27 @@ class ApiClient {
   /* Projects */
   getProjects(): Promise<Project[]>          { return this._req('GET', '/projects'); }
   getProject(id: string): Promise<Project>   { return this._req('GET', `/projects/${id}`); }
-  createProject(body): Promise<Project>      { return this._req('POST', '/projects', body); }
-  updateProject(id, body): Promise<Project>  { return this._req('PATCH', `/projects/${id}`, body); }
+  createProject(body: Partial<Project>): Promise<Project> { return this._req('POST', '/projects', body); }
+  updateProject(id: string, body: Partial<Project>): Promise<Project> { return this._req('PATCH', `/projects/${id}`, body); }
   deleteProject(id: string): Promise<void>   { return this._req('DELETE', `/projects/${id}`); }
 
   /* Project Members */
   getProjectMembers(id: string): Promise<ProjectMember[]>  { return this._req('GET', `/projects/${id}/members`); }
-  addProjectMember(id, userId, role?): Promise<void>       { return this._req('POST', `/projects/${id}/members`, { user_id: userId, role: role || 'member' }); }
+  addProjectMember(id: string, userId: string, role?: string): Promise<void> { return this._req('POST', `/projects/${id}/members`, { user_id: userId, role: role || 'member' }); }
 
   /* Tasks */
   getTasks(): Promise<Task[]>                        { return this._req('GET', '/tasks'); }
   getProjectTasks(projectId: string): Promise<Task[]> { return this._req('GET', `/projects/${projectId}/tasks`); }
-  createTask(body): Promise<Task>                    { return this._req('POST', '/tasks', body); }
-  updateTask(id, body): Promise<Task>                { return this._req('PATCH', `/tasks/${id}`, body); }
+  createTask(body: Partial<Task>): Promise<Task>     { return this._req('POST', '/tasks', body); }
+  updateTask(id: string, body: Partial<Task>): Promise<Task> { return this._req('PATCH', `/tasks/${id}`, body); }
   deleteTask(id: string): Promise<void>              { return this._req('DELETE', `/tasks/${id}`); }
   submitReview(id: string): Promise<Task>            { return this._req('POST', `/tasks/${id}/submit-review`); }
   approveTask(id: string): Promise<Task>             { return this._req('POST', `/tasks/${id}/approve`); }
   rejectTask(id: string, comment?: string): Promise<Task> { return this._req('POST', `/tasks/${id}/reject`, { comment: comment ?? '' }); }
   getTaskComments(id: string): Promise<Comment[]>    { return this._req('GET', `/tasks/${id}/comments`); }
-  createComment(id, text): Promise<Comment>          { return this._req('POST', `/tasks/${id}/comments`, { content: text }); }
+  createComment(id: string, text: string): Promise<Comment> { return this._req('POST', `/tasks/${id}/comments`, { content: text }); }
   getAttachments(id: string): Promise<Attachment[]>  { return this._req('GET', `/tasks/${id}/attachments`); }
-  deleteAttachment(taskId, attId): Promise<void>     { return this._req('DELETE', `/tasks/${taskId}/attachments/${attId}`); }
+  deleteAttachment(taskId: string, attId: string): Promise<void> { return this._req('DELETE', `/tasks/${taskId}/attachments/${attId}`); }
 
   uploadAttachment(taskId: string, file: File): Promise<Attachment> {
     const fd = new FormData();

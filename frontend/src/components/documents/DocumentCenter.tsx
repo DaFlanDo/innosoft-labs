@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { api } from '../../api/client';
 import { useStore } from '../../store/useStore';
-import type { ProjectDocument, ProjectFolder, ProjectStructure } from '../../types';
+import type { ProjectFolder, ProjectStructure } from '../../types';
 import { useToast } from '../../hooks/useToast';
 import { formatDate } from '../../utils';
 import { CustomSelect } from '../ui/CustomSelect';

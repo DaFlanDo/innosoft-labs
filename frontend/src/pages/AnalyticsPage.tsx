@@ -27,7 +27,7 @@ export function AnalyticsPage() {
           total_projects: projects.length,
           total_tasks: tasks.length,
           completed_tasks: tasks.filter(t => t.status === 'done').length,
-          in_progress_tasks: tasks.filter(t => t.status === 'progress').length,
+          in_progress_tasks: tasks.filter(t => t.status === 'in_progress').length,
           team_members: team.length,
         });
         setTasksByProject(projects.map(p => ({
