@@ -1,0 +1,309 @@
+/* Premium Swiss Design Overrides */
+
+body {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Sidebar Refinement */
+.sidebar {
+    background: #FFFFFF !important;
+    backdrop-filter: none !important;
+    border-right: 1px solid #000000 !important;
+    padding: 0 !important;
+}
+
+.logo-text {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-size: 16px !important;
+    font-weight: 700;
+    color: #000 !important;
+}
+
+.sidebar-header {
+    border-bottom: 1px solid #000 !important;
+    padding: 32px 24px !important;
+}
+
+/* Page Layout & Whitespace */
+.page-content {
+    padding: 60px 80px !important;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.page-title {
+    font-family: var(--font-display);
+    font-size: 64px !important;
+    font-weight: 400 !important;
+    line-height: 1 !important;
+    text-transform: uppercase;
+    letter-spacing: -0.04em;
+    border-bottom: 4px solid #000;
+    padding-bottom: 24px;
+    margin-bottom: 16px;
+    color: #000 !important;
+}
+
+.page-subtitle {
+    font-family: var(--font-body);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-size: 11px !important;
+    color: #000 !important;
+    font-weight: 600;
+}
+
+h1, h2, h3, h4, h5, h6, .section-title {
+    font-family: var(--font-display);
+    font-size: 32px !important;
+    font-weight: 400 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: #000;
+    margin-bottom: 32px !important;
+}
+
+.section {
+    margin-bottom: 80px !important;
+}
+
+/* Elegant Navigation */
+.nav-item {
+    border-radius: 0 !important;
+    border: none !important;
+    border-bottom: 1px solid #EBEBEB !important;
+    margin: 0 !important;
+    padding: 16px 24px !important;
+    text-transform: uppercase;
+    font-size: 10px !important;
+    letter-spacing: 0.15em;
+    transition: all 0.2s ease !important;
+    position: relative;
+    color: #666 !important;
+}
+
+.sidebar-nav .nav-section:first-child {
+    margin-top: 24px;
+}
+
+.nav-item:hover {
+    background: transparent !important;
+    color: var(--accent) !important;
+    padding-left: 32px !important;
+}
+
+.nav-item.active {
+    background: transparent !important;
+    color: #000 !important;
+    font-weight: 700 !important;
+    border-bottom: 1px solid #000 !important;
+}
+
+.nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: #000;
+}
+
+.nav-item svg {
+    display: inline-block !important; 
+    margin-right: 12px;
+    opacity: 0.5;
+    transition: inherit;
+}
+
+.nav-item.active svg {
+    opacity: 1;
+    color: #000;
+}
+
+.nav-item:hover svg {
+    color: var(--accent);
+}
+
+.nav-label {
+    margin: 0 !important;
+    padding: 32px 24px 12px 24px !important;
+    color: #999 !important;
+    border-bottom: 1px solid #000 !important;
+}
+
+/* Stats Area - Swiss Style */
+.stats-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 40px !important;
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #000;
+    padding: 40px 0 !important;
+    margin-bottom: 80px !important;
+}
+
+.stat-card {
+    border: none !important;
+    border-right: 1px solid #EBEBEB !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 0 24px 0 0 !important;
+}
+
+.stat-card:last-child {
+    border-right: none !important;
+}
+
+.stat-icon {
+    display: none !important;
+}
+
+.stat-value {
+    font-family: var(--font-display);
+    font-size: 80px !important;
+    line-height: 0.9 !important;
+    font-weight: 400 !important;
+    letter-spacing: -0.05em;
+    color: #000 !important;
+}
+
+.stat-label {
+    font-family: var(--font-body);
+    text-transform: uppercase;
+    font-size: 11px !important;
+    letter-spacing: 0.15em;
+    color: #666 !important;
+    margin-top: 12px !important;
+}
+
+.stat-trend {
+    margin-top: 12px !important;
+    font-family: var(--font-body);
+    font-size: 10px !important;
+    text-transform: uppercase;
+    font-weight: 600 !important;
+}
+
+/* Card Design -> Data Rows Design */
+.projects-grid, .tasks-list {
+    gap: 40px !important;
+}
+
+.project-card, .task-item {
+    border: none !important;
+    border-top: 2px solid #000 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 24px 0 !important;
+    transition: transform 0.2s ease !important;
+}
+
+.project-card:hover, .task-item:hover {
+    transform: translateY(-4px) !important;
+    border-top-color: var(--accent) !important;
+    box-shadow: none !important;
+}
+
+.project-card-title, .task-title {
+    font-family: var(--font-display);
+    font-size: 28px !important;
+    font-weight: 400 !important;
+    letter-spacing: -0.02em !important;
+}
+
+/* Checkbox */
+.task-checkbox {
+    border-radius: 0 !important;
+    border: 1px solid #000 !important;
+    width: 20px !important;
+    height: 20px !important;
+}
+
+.task-checkbox.checked {
+    background: #000 !important;
+    border-color: #000 !important;
+}
+
+/* Buttons */
+.add-btn {
+    background: var(--accent) !important;
+    color: #FFF !important;
+    border-radius: 0 !important;
+    border: none !important;
+    font-family: var(--font-body) !important;
+    text-transform: uppercase !important;
+    font-size: 11px !important;
+    letter-spacing: 0.15em !important;
+    padding: 16px 32px !important;
+    box-shadow: none !important;
+}
+
+.add-btn:hover {
+    background: #000 !important;
+}
+
+.header-btn {
+    border-radius: 0 !important;
+    border: 1px solid #000 !important;
+    text-transform: uppercase;
+    font-size: 10px !important;
+    letter-spacing: 0.1em;
+}
+
+/* User Card Sidebar */
+.user-card {
+    border-radius: 0 !important;
+    border-top: 1px solid #000 !important;
+    margin: 0 !important;
+    padding: 24px !important;
+    background: transparent !important;
+}
+
+.user-card:hover {
+    background: #F5F5F5 !important;
+}
+
+.user-avatar {
+    border-radius: 0 !important;
+    background: #000 !important;
+    color: #FFF !important;
+}
+
+.user-name {
+    font-family: var(--font-body) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.1em !important;
+    font-weight: 600 !important;
+}
+
+/* Nav Badges */
+.nav-badge {
+    background: var(--accent) !important;
+    color: #FFF !important;
+    font-family: var(--font-body) !important;
+    font-weight: 700 !important;
+    border-radius: 0 !important;
+    padding: 2px 6px !important;
+    margin-left: auto;
+}
+
+/* Misc Minimal adjustments */
+input, textarea, select, .search-box {
+    border-radius: 0 !important;
+    border: none !important;
+    border-bottom: 2px solid #000 !important;
+    background: transparent !important;
+    padding: 8px 0 !important;
+}
+
+.search-box:focus-within {
+    box-shadow: none !important;
+    border-bottom-color: var(--accent) !important;
+}
