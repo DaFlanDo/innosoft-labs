@@ -1,0 +1,12 @@
+**/node_modules
+**/.venv
+**/venv
+**/__pycache__
+**/.pytest_cache
+**/.env
+frontend/dist
+_legacy_vanilla
+report_sql_queries
+docs
+.git
+**/*.docx

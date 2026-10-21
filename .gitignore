@@ -21,3 +21,4 @@ frontend/dist/
 report_sql_queries/
 _legacy_vanilla/
 *.docx
+/.env
