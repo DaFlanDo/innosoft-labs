@@ -78,21 +78,21 @@ export function BoardCard({ task: t, onOpen, onDelete }: Props) {
     >
       <div className="board-task-card-top">
         <div className="board-task-title">{t.title}</div>
-        <div className="board-task-actions">
-          <div className={`priority-chip ${t.priority}`}>
-            <div className={`priority-dot ${t.priority}`} />
-            {t.priority === 'high' ? 'Высокий' : t.priority === 'medium' ? 'Средний' : 'Низкий'}
-          </div>
-          {isOverdue && <span className="burning-badge overdue">🔥 Просрочено</span>}
-          {isBurning && <span className="burning-badge burning">⏳ Горит</span>}
-          {canDelete && (
-            <button className="board-task-delete" title="Удалить" onClick={handleDelete}>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M2.5 2.5L9.5 9.5M9.5 2.5L2.5 9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-            </button>
-          )}
+        {canDelete && (
+          <button className="board-task-delete" title="Удалить" onClick={handleDelete}>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M2.5 2.5L9.5 9.5M9.5 2.5L2.5 9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </button>
+        )}
+      </div>
+      <div className="board-task-chips">
+        <div className={`priority-chip ${t.priority}`}>
+          <div className={`priority-dot ${t.priority}`} />
+          {t.priority === 'high' ? 'Высокий' : t.priority === 'medium' ? 'Средний' : 'Низкий'}
         </div>
+        {isOverdue && <span className="burning-badge overdue">Просрочено</span>}
+        {isBurning && <span className="burning-badge burning">Горит</span>}
       </div>
       {tags.length > 0 && (
         <div className="board-task-tags">
