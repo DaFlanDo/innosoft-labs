@@ -35,7 +35,7 @@ def upgrade() -> None:
         "projects",
         sa.Column("id", sa.CHAR(36), primary_key=True),
         sa.Column("name", sa.String(200), nullable=False),
-        sa.Column("description", sa.Text, nullable=True, server_default=""),
+        sa.Column("description", sa.Text, nullable=True),  # MySQL: у TEXT не бывает DEFAULT
         sa.Column("status", sa.String(30), nullable=False, server_default="planning"),
         sa.Column("priority", sa.String(20), nullable=False, server_default="medium"),
         sa.Column("color", sa.String(7), nullable=False, server_default="#6C5CE7"),
