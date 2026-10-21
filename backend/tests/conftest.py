@@ -104,3 +104,24 @@ async def member_token(client, auth_headers, project_id):
 @pytest.fixture
 def member_headers(member_token):
     return {"Authorization": f"Bearer {member_token}"}
+
+
+@pytest.fixture
+async def outsider_headers(client, auth_headers):
+    """Участник другого проекта — к project_id доступа не имеет."""
+    other = await client.post(
+        "/api/projects",
+        json={"name": "Other Project", "priority": "low", "status": "planning", "color": "#111"},
+        headers=auth_headers,
+    )
+    other_id = other.json()["id"]
+    inv = await client.post(
+        f"/api/projects/{other_id}/invitations",
+        json={"project_id": other_id, "role": "member"},
+        headers=auth_headers,
+    )
+    reg = await client.post(
+        f"/api/invite/{inv.json()['token']}/register",
+        json={"name": "Outsider", "email": "outsider@test.com", "password": "pass", "initials": "OU"},
+    )
+    return {"Authorization": f"Bearer {reg.json()['access_token']}"}

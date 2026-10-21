@@ -18,13 +18,20 @@ router = APIRouter(prefix="/api/users", tags=["Users"])
 
 
 @router.get("", response_model=list[UserOut])
-async def get_users(db: Annotated[AsyncSession, Depends(get_db)]):
+async def get_users(
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+):
     users = await user_service.list_users(db)
     return users
 
 
 @router.get("/{user_id}", response_model=UserOut)
-async def get_user(user_id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
+async def get_user(
+    user_id: UUID,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+):
     user = await user_service.get_user(db, user_id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -64,7 +71,11 @@ async def upload_avatar(
 
 
 @router.get("/{user_id}/stats", response_model=UserStats)
-async def get_stats(user_id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
+async def get_stats(
+    user_id: UUID,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+):
     return await user_service.get_user_stats(db, user_id)
 
 

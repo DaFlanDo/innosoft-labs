@@ -5,10 +5,22 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.dependencies import get_db
+from app.core.dependencies import get_db, get_current_user
+from app.core.permissions import require_manager_or_admin
+from app.db.models import User
 from app.services import analytics_service
 
-router = APIRouter(prefix="/api/analytics", tags=["Analytics"])
+
+async def _manager_or_admin(current_user: Annotated[User, Depends(get_current_user)]) -> None:
+    # Сводка по всем проектам — участникам она не показывается и в интерфейсе
+    await require_manager_or_admin(current_user)
+
+
+router = APIRouter(
+    prefix="/api/analytics",
+    tags=["Analytics"],
+    dependencies=[Depends(_manager_or_admin)],
+)
 
 
 @router.get("/summary")
