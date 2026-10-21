@@ -71,7 +71,7 @@ export function BoardCard({ task: t, onOpen, onDelete }: Props) {
 
   return (
     <div
-      className={`board-task-card ${isDone ? 'task-done' : ''} ${isOverdue ? 'task-overdue' : ''} ${isBurning ? 'task-burning' : ''}`}
+      className={`board-task-card ${isDone ? 'task-done' : ''}`}
       draggable
       data-id={t.id}
       onClick={onOpen}
@@ -91,8 +91,6 @@ export function BoardCard({ task: t, onOpen, onDelete }: Props) {
           <div className={`priority-dot ${t.priority}`} />
           {t.priority === 'high' ? 'Высокий' : t.priority === 'medium' ? 'Средний' : 'Низкий'}
         </div>
-        {isOverdue && <span className="burning-badge overdue">Просрочено</span>}
-        {isBurning && <span className="burning-badge burning">Горит</span>}
       </div>
       {tags.length > 0 && (
         <div className="board-task-tags">
@@ -102,18 +100,25 @@ export function BoardCard({ task: t, onOpen, onDelete }: Props) {
         </div>
       )}
       <div className="board-task-footer">
-        <span className="board-task-date">{formatDate(t.due_date)}</span>
+        {/* Срок — единственный сигнал просрочки: без рамок и плашек, только цвет даты */}
+        <span className={`board-task-date ${isOverdue ? 'is-overdue' : isBurning ? 'is-burning' : ''}`}>
+          {formatDate(t.due_date)}
+          {isOverdue && ' · просрочено'}
+          {isBurning && ' · меньше суток'}
+        </span>
         <div className="board-task-assignee" style={{ background: color }}>{initials}</div>
       </div>
       {(canSubmitReview || canModerateReview) && (
-        <div className="board-task-footer" onClick={e => e.stopPropagation()}>
+        <div className="board-task-review" onClick={e => e.stopPropagation()}>
           {canSubmitReview && (
-            <button className="btn btn-primary" onClick={handleSubmitReview}>Отправить на проверку</button>
+            <button className="btn board-task-review-btn" onClick={handleSubmitReview} title="Отправить на проверку менеджеру">
+              На проверку
+            </button>
           )}
           {canModerateReview && (
             <>
-              <button className="btn btn-primary" onClick={handleApprove}>Принять</button>
-              <button className="btn" onClick={handleReject}>Вернуть</button>
+              <button className="btn btn-primary board-task-review-btn" onClick={handleApprove}>Принять</button>
+              <button className="btn board-task-review-btn" onClick={handleReject}>Вернуть</button>
             </>
           )}
         </div>

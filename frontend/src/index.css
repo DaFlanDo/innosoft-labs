@@ -5608,3 +5608,29 @@ html {
   background: white !important;
   box-shadow: 0 0 4px white;
 }
+
+/* ─── Kanban: спокойная индикация срока и компактные кнопки проверки ── */
+.board-task-date.is-overdue {
+    color: var(--red);
+}
+
+.board-task-date.is-burning {
+    color: #E67E22;
+}
+
+.board-task-review {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+}
+
+/* brutalism.css задаёт .btn через !important — перекрываем точечно */
+.board-task-card .board-task-review .board-task-review-btn {
+    padding: 4px 10px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    line-height: 1.4 !important;
+    border-radius: 6px !important;
+    width: auto;
+    white-space: nowrap;
+}
