@@ -15,7 +15,9 @@ services:
     volumes:
       - mysqldata:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      # По TCP: при первой инициализации MySQL временно поднимается без сети,
+      # и ping через сокет проходит раньше, чем база реально готова
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -49,6 +51,7 @@ services:
 
   app:
     build: .
+    restart: unless-stopped
     depends_on:
       mysql:
         condition: service_healthy
