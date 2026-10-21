@@ -1,3 +1,8 @@
+import os
+
+# До импорта app.*: настройки читаются при импорте
+os.environ.setdefault("JWT_SECRET_KEY", "test-secret")
+
 import pytest
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
