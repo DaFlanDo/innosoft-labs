@@ -6,7 +6,9 @@ import socketio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
+import os
 from pathlib import Path
 
 from app.api import auth, projects, tasks, users, notifications, analytics, invitations, activities, documents
@@ -16,7 +18,12 @@ from app.db.models import Base
 from app.db.seed import seed
 from app.socket.handlers import sio
 
-FRONTEND_DIR = Path(__file__).resolve().parent.parent.parent  # => project root
+# Собранный React-фронт (npm run build). Раньше здесь был корень проекта —
+# и наружу отдавались все файлы, включая backend/.env.
+FRONTEND_DIR = Path(
+    os.environ.get("FRONTEND_DIST")
+    or Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
+)
 
 
 @asynccontextmanager
@@ -65,16 +72,27 @@ async def health():
     return {"status": "ok"}
 
 
-class SafeStaticFiles(StaticFiles):
+class SPAStaticFiles(StaticFiles):
+    """Статика фронта; неизвестные пути — index.html (маршруты React Router)."""
+
     async def __call__(self, scope, receive, send):
         if scope["type"] == "http":
             await super().__call__(scope, receive, send)
         elif scope["type"] == "websocket":
             await send({"type": "websocket.close"})
 
+    async def get_response(self, path, scope):
+        try:
+            return await super().get_response(path, scope)
+        except StarletteHTTPException as exc:
+            if exc.status_code == 404 and not path.startswith("api/"):
+                return await super().get_response("index.html", scope)
+            raise
 
-# ─── Serve frontend static files ─────────────
-api_app.mount("/", SafeStaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
+
+# ─── Serve frontend static files (если фронт собран) ─────────────
+if (FRONTEND_DIR / "index.html").is_file():
+    api_app.mount("/", SPAStaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
 
 # ─── SocketIO wrapper ────────────────────────
 # We wrap the FastAPI app into the SocketIO ASGI app.
