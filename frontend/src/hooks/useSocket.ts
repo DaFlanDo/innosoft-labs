@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import { useToast } from './useToast';
+import { api } from '../api/client';
 
 export function useSocket() {
     const { currentUser, addTask, updateTask, removeTask, updateProject, addNotification } = useStore();
@@ -13,12 +14,11 @@ export function useSocket() {
     let socket: any;
     try {
       // @ts-ignore
-      socket = window.io({ path: '/socket.io' });
+      // Сервер пускает только с токеном и сам подписывает на комнаты
+      // пользователя и его проектов
+      socket = window.io({ path: '/socket.io', auth: { token: api.getToken() } });
 
-      socket.on('connect', () => {
-        console.log('[WS] Connected:', socket.id);
-        socket.emit('join:user', { userId: currentUser.id });
-      });
+      socket.on('connect', () => console.log('[WS] Connected:', socket.id));
       socket.on('disconnect', () => console.log('[WS] Disconnected'));
 
       socket.on('task:created', (task: any) => {

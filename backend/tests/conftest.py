@@ -125,3 +125,9 @@ async def outsider_headers(client, auth_headers):
         json={"name": "Outsider", "email": "outsider@test.com", "password": "pass", "initials": "OU"},
     )
     return {"Authorization": f"Bearer {reg.json()['access_token']}"}
+
+
+@pytest.fixture
+def session_factory():
+    """Фабрика сессий тестовой БД — для кода, который открывает сессии сам (Socket.IO)."""
+    return TestingSessionLocal

@@ -1,48 +1,85 @@
-"""WebSocket (python-socketio) event handlers."""
+"""WebSocket (python-socketio) event handlers.
+
+Подключение только с JWT: клиент передаёт `auth={"token": ...}`. Комнаты
+назначает сервер — личная `user:<id>` и `project:<id>` для каждого проекта,
+где пользователь участник (админ — во всех). Чужой проект клиенту недоступен.
+"""
 
 import socketio
+from sqlalchemy import select
+
+from app.core.permissions import get_project_role
+from app.core.security import decode_access_token
+from app.db.database import async_session_factory
+from app.db.models import Project, User, project_members
 
 sio = socketio.AsyncServer(
     async_mode="asgi",
     cors_allowed_origins="*",
     cors_credentials=True,
-    logger=True,
-    engineio_logger=True,
+    logger=False,
+    engineio_logger=False,
 )
 
 
+async def _user_from_token(token: str | None) -> User | None:
+    if not token:
+        return None
+    try:
+        user_id = decode_access_token(token).get("sub")
+    except Exception:
+        return None
+    async with async_session_factory() as db:
+        return (await db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
+
+
+async def _project_ids(user: User) -> list[str]:
+    async with async_session_factory() as db:
+        if user.system_role == "admin":
+            rows = await db.execute(select(Project.id))
+        else:
+            rows = await db.execute(
+                select(project_members.c.project_id).where(project_members.c.user_id == str(user.id))
+            )
+        return [str(r[0]) for r in rows.all()]
+
+
 @sio.event
-async def connect(sid, environ):
-    print(f"[WS] Client connected: {sid}")
+async def connect(sid, environ, auth=None):
+    user = await _user_from_token((auth or {}).get("token"))
+    if user is None:
+        raise socketio.exceptions.ConnectionRefusedError("unauthorized")
+
+    await sio.save_session(sid, {"user_id": str(user.id)})
+    await sio.enter_room(sid, f"user:{user.id}")
+    for project_id in await _project_ids(user):
+        await sio.enter_room(sid, f"project:{project_id}")
 
 
 @sio.event
 async def disconnect(sid):
-    print(f"[WS] Client disconnected: {sid}")
+    pass
 
 
 @sio.on("join:project")
 async def join_project(sid, data):
-    project_id = data.get("projectId")
-    if project_id:
-        sio.enter_room(sid, f"project:{project_id}")
-        print(f"[WS] {sid} joined room project:{project_id}")
+    """Подписка на проект, в который пользователя добавили уже после подключения."""
+    project_id = (data or {}).get("projectId")
+    if not project_id:
+        return
+    session = await sio.get_session(sid)
+    async with async_session_factory() as db:
+        user = (await db.execute(select(User).where(User.id == session["user_id"]))).scalar_one_or_none()
+        if user is None or await get_project_role(db, project_id, user) is None:
+            return
+    await sio.enter_room(sid, f"project:{project_id}")
 
 
 @sio.on("leave:project")
 async def leave_project(sid, data):
-    project_id = data.get("projectId")
+    project_id = (data or {}).get("projectId")
     if project_id:
         await sio.leave_room(sid, f"project:{project_id}")
-        print(f"[WS] {sid} left room project:{project_id}")
-
-
-@sio.on("join:user")
-async def join_user(sid, data):
-    user_id = data.get("userId")
-    if user_id:
-        await sio.enter_room(sid, f"user:{user_id}")
-        print(f"[WS] {sid} joined personal room user:{user_id}")
 
 
 from datetime import datetime
