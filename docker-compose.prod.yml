@@ -1,0 +1,48 @@
+# Продакшен за общим Caddy (см. репозиторий deploy):
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+# Порты наружу не публикуются: Caddy ходит в контейнеры по сети web
+# и сам выдаёт HTTPS. Нужен Docker Compose 2.24+ (для !reset).
+# PUBLIC_HOST — домен приложения, FILES_HOST — домен для файлов из MinIO
+# (браузер открывает подписанные ссылки прямо оттуда).
+name: innosoft
+
+services:
+  mysql:
+    restart: unless-stopped
+    # performance_schema на маленьком VPS съедает ~200 МБ памяти впустую
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --performance-schema=OFF
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Задайте MYSQL_ROOT_PASSWORD в .env}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Задайте MYSQL_PASSWORD в .env}
+
+  redis:
+    restart: unless-stopped
+
+  minio:
+    restart: unless-stopped
+    ports: !reset []
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?Задайте MINIO_ROOT_USER в .env}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Задайте MINIO_ROOT_PASSWORD в .env}
+    networks:
+      default:
+      web:
+        aliases: [innosoft-minio]
+
+  app:
+    ports: !reset []
+    environment:
+      DATABASE_URL: mysql+aiomysql://innosoft:${MYSQL_PASSWORD}@mysql:3306/innosoft?charset=utf8mb4
+      MINIO_PUBLIC_URL: https://${FILES_HOST:?Задайте FILES_HOST в .env}
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000",
+              "--proxy-headers", "--forwarded-allow-ips", "*"]
+    networks:
+      default:
+      web:
+        aliases: [innosoft-app]
+
+networks:
+  web:
+    external: true
