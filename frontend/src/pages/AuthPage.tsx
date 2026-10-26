@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { useStore } from '../store/useStore';
 import { useToast } from '../hooks/useToast';
+import { DemoAccess } from '../components/demo/DemoAccess';
 
 export function AuthPage() {
   const [loading, setLoading] = useState(false);
@@ -53,6 +54,8 @@ export function AuthPage() {
         <div className="auth-tabs">
           <button className="auth-tab active">Войти</button>
         </div>
+
+        <DemoAccess/>
 
         <form className="auth-form" onSubmit={handleLogin}>
           <div className="form-group">

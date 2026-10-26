@@ -4,6 +4,8 @@ import { useStore } from './store/useStore';
 import { api } from './api/client';
 import { useSocket } from './hooks/useSocket';
 import { Sidebar } from './components/layout/Sidebar';
+import { DemoBar } from './components/demo/DemoBar';
+import { DemoEntry } from './pages/DemoEntry';
 import { Header } from './components/layout/Header';
 import { Modal } from './components/ui/Modal';
 import { NewProjectForm } from './components/projects/NewProjectForm';
@@ -48,6 +50,7 @@ function AppLayout() {
 
   return (
     <div className="app">
+      <DemoBar/>
       <Sidebar/>
       <main className="main-content">
         <Header
@@ -105,6 +108,7 @@ export function App() {
     <Routes>
       <Route path="/login" element={<AuthPage/>}/>
       <Route path="/invite/:token" element={<InvitePage/>}/>
+      <Route path="/demo/:role" element={<DemoEntry/>}/>
       <Route path="/*" element={
         <RequireAuth>
           <AppLayout/>

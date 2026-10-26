@@ -46,6 +46,14 @@ class ApiClient {
   }
 
   /* Auth */
+  getDemoInfo(): Promise<{ enabled: boolean; accounts: Partial<Record<string, string>> }> {
+    return this._reqNoAuth('GET', '/auth/demo');
+  }
+  async demoLogin(role: string): Promise<void> {
+    const data = await this._reqNoAuth<{ access_token: string }>('POST', '/auth/demo', { role });
+    this.setToken(data.access_token);
+  }
+
   async login(email: string, password: string): Promise<{ access_token: string; user: User }> {
     const data = await this._req<{ access_token: string; user: User }>('POST', '/auth/login', { email, password });
     this._token = data.access_token;

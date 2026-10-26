@@ -13,6 +13,7 @@ from app.services import user_service
 from app.services.storage_service import upload_file
 from app.core.permissions import require_admin
 from app.cache.redis import cache_invalidate_pattern
+from app.core.demo import forbid_for_demo
 
 router = APIRouter(prefix="/api/users", tags=["Users"])
 
@@ -90,6 +91,8 @@ async def update_system_role(
     if body.system_role and body.system_role not in ("admin", "manager", "member"):
         raise HTTPException(status_code=400, detail="Invalid system_role")
         
+    if body.system_role is not None:
+        forbid_for_demo(await user_service.get_user(db, user_id), "менять системную роль демо-аккаунта")
     updated = await user_service.update_user_admin_fields(db, user_id, body.system_role, body.role)
     if not updated:
         raise HTTPException(status_code=404, detail="User not found")
@@ -108,6 +111,7 @@ async def delete_user(
     if str(user_id) == str(current_user.id):
         raise HTTPException(status_code=400, detail="Cannot delete yourself")
     
+    forbid_for_demo(await user_service.get_user(db, user_id), "удалить демо-аккаунт")
     success = await user_service.delete_user(db, user_id)
     if not success:
         raise HTTPException(status_code=404, detail="User not found")

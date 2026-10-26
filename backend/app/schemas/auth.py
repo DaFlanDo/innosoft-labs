@@ -1,11 +1,17 @@
 """Auth schemas — login, token."""
 
+from typing import Literal
+
 from pydantic import BaseModel, EmailStr
 
 
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
+
+
+class DemoLoginRequest(BaseModel):
+    role: Literal["admin", "manager", "member"]
 
 
 class SetupRequest(BaseModel):

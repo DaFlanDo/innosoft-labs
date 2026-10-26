@@ -11,7 +11,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.dependencies import get_db, get_current_user
 from app.core.security import verify_password, create_access_token, hash_password
 from app.db.models import User
-from app.schemas.auth import LoginRequest, TokenResponse, SetupRequest
+from app.core.demo import DEMO_ACCOUNTS, demo_enabled
+from app.schemas.auth import LoginRequest, TokenResponse, SetupRequest, DemoLoginRequest
 from app.schemas.user import UserOut
 
 router = APIRouter(prefix="/api/auth", tags=["Auth"])
@@ -23,6 +24,29 @@ async def login(body: LoginRequest, db: Annotated[AsyncSession, Depends(get_db)]
     user = result.scalar_one_or_none()
     if not user or not verify_password(body.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверный email или пароль")
+
+    token = create_access_token({"sub": str(user.id)})
+    return TokenResponse(access_token=token, user=UserOut.model_validate(user))
+
+
+@router.get("/demo")
+async def demo_info():
+    """Фронт по этому ответу решает, показывать ли кнопки демо-входа."""
+    if not demo_enabled():
+        return {"enabled": False, "accounts": {}}
+    return {"enabled": True, "accounts": DEMO_ACCOUNTS}
+
+
+@router.post("/demo", response_model=TokenResponse)
+async def demo_login(body: DemoLoginRequest, db: Annotated[AsyncSession, Depends(get_db)]):
+    """Вход без пароля под сид-аккаунтом выбранной роли — только на демо-стенде."""
+    if not demo_enabled():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Демо-режим выключен")
+    result = await db.execute(select(User).where(User.email == DEMO_ACCOUNTS[body.role]))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                            detail="Демо-данные ещё загружаются, попробуйте через минуту")
 
     token = create_access_token({"sub": str(user.id)})
     return TokenResponse(access_token=token, user=UserOut.model_validate(user))

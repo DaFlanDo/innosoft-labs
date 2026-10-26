@@ -72,6 +72,8 @@ services:
       MINIO_BUCKET: innosoft
       DEBUG: "false"
       SEED_DEMO: ${SEED_DEMO:-true}
+      # Кнопки «Войти как …» без пароля и защита общих демо-аккаунтов
+      DEMO_MODE: ${DEMO_MODE:-true}
     ports:
       - "${APP_PORT:-8000}:8000"
 

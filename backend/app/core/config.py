@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     # Демо-пользователи и проекты при пустой базе. В проде — выключено:
     # у демо-админа известный пароль
     SEED_DEMO: bool = False
+    # Публичный демо-стенд: вход одной кнопкой под сид-аккаунтами (core/demo.py)
+    DEMO_MODE: bool = False
 
     model_config = {
         "env_file": ".env",

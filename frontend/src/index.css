@@ -5634,3 +5634,52 @@ html {
     width: auto;
     white-space: nowrap;
 }
+
+/* ── Демо-стенд: вход по ролям и плашка смены роли ── */
+/* С кнопками демо карточка входа выше экрана ноутбука — даём прокрутку */
+.auth-screen { overflow-y: auto; padding: 24px 16px; align-items: safe center; }
+.demo-access { margin-bottom: 8px; }
+.demo-access-title { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+.demo-access-hint { font-size: 13px; color: var(--text-tertiary); margin-bottom: 12px; line-height: 1.4; }
+.demo-role {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2px 12px;
+    width: 100%;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    text-align: left;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+    cursor: pointer;
+}
+.demo-role:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-light); }
+.demo-role:disabled { opacity: 0.6; cursor: default; }
+.demo-role-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.demo-role-text { grid-column: 1; font-size: 12px; color: var(--text-tertiary); line-height: 1.35; }
+.demo-role-arrow { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-size: 18px; color: var(--accent); }
+.demo-access-error { font-size: 13px; color: var(--red); margin-top: 4px; }
+.demo-access-divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 20px 0 12px; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-tertiary);
+}
+.demo-access-divider::before, .demo-access-divider::after { content: ''; flex: 1; height: 1px; background: var(--border-color); opacity: 0.4; }
+
+.demo-bar {
+    position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 900;
+    display: flex; align-items: center; gap: 2px; padding: 4px 4px 4px 14px;
+    background: var(--text-primary); color: var(--bg-primary);
+    border-radius: 999px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    font-size: 12px; white-space: nowrap;
+}
+.demo-bar-label { opacity: 0.6; font-weight: 600; margin-right: 6px; }
+.demo-bar button {
+    padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 600;
+    color: var(--bg-primary); opacity: 0.85; cursor: pointer; background: transparent;
+}
+.demo-bar button:hover:not(:disabled) { opacity: 1; background: rgba(255, 255, 255, 0.15); }
+.demo-bar button.active { background: var(--bg-primary); color: var(--text-primary); opacity: 1; }
+@media (max-width: 640px) { .demo-bar-label { display: none; } }
