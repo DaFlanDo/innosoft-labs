@@ -52,6 +52,8 @@ export function DashboardPage({ search }: Props) {
   // Как в аналитике: в работе или возвращены на доработку
   const inProgressTasksCount = tasks.filter(t => (t.status === 'in_progress' || t.status === 'rejected') && t.project_id && activeProjectIds.has(t.project_id)).length;
 
+  const reviewTasksCount = tasks.filter(t => t.status === 'pending_review' && t.project_id && activeProjectIds.has(t.project_id)).length;
+
   // Filter by search
   const q = search.toLowerCase().trim();
   const filteredProjects = q
@@ -78,28 +80,28 @@ export function DashboardPage({ search }: Props) {
             <span className="stat-value">{totalProjects}</span>
             <span className="stat-label">Проектов</span>
           </div>
-          <span className="stat-trend up">▲ +2 за месяц</span>
+          <span className="stat-trend neutral">всего: {projects.length}</span>
         </div>
         <div className="stat-card">
           <div className="stat-info">
             <span className="stat-value">{completedTasksCount}</span>
             <span className="stat-label">Выполнено</span>
           </div>
-          <span className="stat-trend up">▲ +8 за неделю</span>
+          <span className="stat-trend neutral">из задач: {tasks.length}</span>
         </div>
         <div className="stat-card">
           <div className="stat-info">
             <span className="stat-value">{inProgressTasksCount}</span>
             <span className="stat-label">В процессе</span>
           </div>
-          <span className="stat-trend neutral">■ Стабильно</span>
+          <span className="stat-trend neutral">на проверке: {reviewTasksCount}</span>
         </div>
         <div className="stat-card" style={{ background: '#D4FF00' }}>
           <div className="stat-info">
             <span className="stat-value">{teamMemberCount}</span>
             <span className="stat-label">Участники</span>
           </div>
-          <span className="stat-trend up">● +1 новый</span>
+          <span className="stat-trend neutral">в проектах: {projects.length}</span>
         </div>
       </div>
 

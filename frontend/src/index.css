@@ -15,8 +15,8 @@
     --text-primary: #000000;
     --text-secondary: #333333;
     --text-tertiary: #666666;
-    --border-color: #000000;
-    --border-light: #000000;
+    --border-color: #E5E5E5;
+    --border-light: #CFCFCF;
     --accent: #0044FF;
     --accent-light: rgba(0, 68, 255, 0.1);
     --accent-hover: #0033CC;
@@ -5666,7 +5666,7 @@ html {
     margin: 20px 0 12px; font-size: 11px; font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-tertiary);
 }
-.demo-access-divider::before, .demo-access-divider::after { content: ''; flex: 1; height: 1px; background: var(--border-color); opacity: 0.4; }
+.demo-access-divider::before, .demo-access-divider::after { content: ''; flex: 1; height: 1px; background: var(--border-color); }
 
 .demo-bar {
     position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 900;
